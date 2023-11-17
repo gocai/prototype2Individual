@@ -46,7 +46,7 @@ lg gl
 // Game design variable container
 const G = {
 	WIDTH: 100,
-	HEIGHT: 100,
+	HEIGHT: 75,
 
     PLAYER_SLASH_SPEED: 2,
     SLASH_THRESHHOLD: 20,
@@ -108,6 +108,9 @@ let player;
 */
 let slash;
 
+let goblinsKilled = "Goblins Killed : "
+let fistSize = 5;
+let playerY = 49.75;
 // The game loop function
 function update() {
 	if (!ticks) {
@@ -120,23 +123,24 @@ function update() {
 	}
 	
     if(goblins.length == 0){
-        for(let i = 0; i <= 9; i++){
-            goblinSpeed = rnd(G.GOBLIN_MIN_SPEED,G.GOBLIN_MAX_BASE_SPEED);
-            const posX = G.WIDTH;
-            const posY = 50;
+      goblinSpeed = rnd(G.GOBLIN_MIN_SPEED,G.GOBLIN_MAX_BASE_SPEED);
+        for(let i = 0; i <= 5; i++){
+            const posX = rnd(G.WIDTH,G.WIDTH + 60);
+            const posY = rnd(20,G.HEIGHT);
             goblins.push({ pos: vec(posX, posY) })
         }
     }
 
     //player controls and position!
-    player.pos = vec(10,49.75);
+    player.pos = vec(10,playerY);
     //if(input.isPressed) player.pos.y -= 10;
     player.slashCooldown--;
     if(input.isJustPressed && player.slashCooldown <= 0){ 
     slash.push({pos: vec(player.pos.x + 5, player.pos.y)});
     player.slashCooldown = G.PLAYER_SLASH_SPEED
+    playerY = rnd(playerY-2, playerY+2);
     }
-    player.pos.clamp(0, G.WIDTH, 0, G.HEIGHT);
+    player.pos.clamp(0, G.WIDTH, 40, 59);
 
     
     color ("black");
@@ -148,8 +152,9 @@ function update() {
         remove(slash,(s) => {
             return s.pos.x > G.SLASH_THRESHHOLD;
         })
+        s.pos.clamp(0, G.WIDTH, 40, 59);
         color("red");
-        box(s.pos,2);
+        box(s.pos,fistSize);
         particle(
             player.pos.x, // x coordinate
             player.pos.y, // y coordinate
@@ -173,16 +178,24 @@ function update() {
             particle(g.pos);
             addScore(1);
             play("hit");
+            fistSize++;
+            color("yellow");
+            particle(1,6);
+            G.GOBLIN_MIN_SPEED += 0.05;
+            G.GOBLIN_MAX_BASE_SPEED += 0.05  ;
         }
         const playerPunched = char("b",g.pos).isColliding.char.a;
         if(playerPunched){
             end();
             play("explosion");
+            G.GOBLIN_MIN_SPEED = 1.0;
+            G.GOBLIN_MAX_BASE_SPEED = 2.0;
+            fistSize = 5;
         }
         return (isPunched || g.pos.x < 0)
     });
     //debugging for resource management
-    //text(slash.length.toString(), 3, 10);
+    text("DEAD GOBLINS", 3, 8);
 }
 
       
